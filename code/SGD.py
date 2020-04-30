@@ -153,7 +153,7 @@ datagen = ImageDataGenerator(
 def create_model():
   global image_size
   input_shape = (image_size, image_size, 3)
-  # VGG16, InceptionV3, ResNet50, DenseNet121 のいずれかのモデルを選択
+  # Choose the model from "VGG16, InceptionV3, ResNet50, DenseNet121"
   base_model = VGG16(weights= 'imagenet', include_top=False, input_shape=input_shape)
   x = base_model.output
   x = GlobalAveragePooling2D()(x)
