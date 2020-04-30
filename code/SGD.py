@@ -28,26 +28,26 @@ from sklearn.model_selection import StratifiedKFold, KFold
 
 #steps_per_epoch = int(X.shape[0] // batch_size)
 #validation_steps = int(count_validation / batch_size)
-# Trueなら学習せず、predictのみ実行する
+# If "True", you can predict without training algorithm. 
 predict_only = True 
 #use_ensemble = False
-# True なら generator を使う。Falseならgeneratorを使わずdatasetをそのまま渡す
+# If "True", you can use generator.
 use_generator = True
-# cross validation をつかう(True)か、1回だけ(False)か
+
+# If "True", you can use cross-validation. 
 use_cross_validation = True
-# お試しでMNISTを対象に実行するか
+# When you use cross_validation, decide how many validation should be divided.
+n_splits=4
+
+# If "True", you can use MNIST as trial.
 use_mnist = False
-#use_cross_validation = False
-#use_simple = True
+
 use_down_sampling=True
+#Decide how many downsamples you use in each validation.
+sub_split=10
 
 batch_size=4
-epochs=10
-# use_cross_validation = True のときのみ使う。分割回数指定
-n_splits=4
-# 各splitで、何回ダウンサンプルして学習をやり直すか？
-#(クロスバリデーションの1splitあたりの学習エポック数は sub_split * epoch になる。
-sub_split=10
+epochs=50
 
 
 def down_sample(x,y, shuffle=True):
@@ -250,10 +250,11 @@ if not predict_only:
 
 preds=[]
 models=[]
-# 学習済みモデルを使って予測を行う。
-# x: 予測対象のリスト
-# raw: Trueなら予測結果リストを集計せずに返す(modelごとの予測結果をcategoricalで返す)。デフォルトFalse
-# model_range: 利用するモデルを選択する。たとえばmodel_range=[0,2] なら1番目と3番目を使う。Noneならすべて使う(np.arange(n_split)と同じ)。デフォルトはNone。
+
+# prediction
+# x: list for prediction
+# If "raw=True", the categorical cross-entropy prediction value for each image are provided. If "raw=False", present summary only.
+# model_range: Choice which h5file you use.
 def predict(x, raw=False, model_range=None, use_argmax=True):
     global model_save_name, n_splits, preds, use_cross_validation, predict_only
     pred = []
