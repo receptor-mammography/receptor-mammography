@@ -4,14 +4,14 @@ This algorthm was developed to classify receptor expressions in breast cancer fr
 You can use this algorithm after downloaded hdf5 file from release page. This algorithm is not for a diagnostic use.
 
 ## Install
-Clone this repository.
+・Clone this repository.
 
-Download a hdf5 file (*_best-performing.hdf5) into the directory of "h5files".
+・Download a hdf5 file (*_best-performing.hdf5) into the directory of "h5files".
 
-hdf5 file can be downloaded from: https://github.com/receptor-mammography/receptor-mammography/releases
+※hdf5 file can be downloaded from: https://github.com/receptor-mammography/receptor-mammography/releases
 
 ## Usage
-python SGD.py in the directory of "code".
+・python SGD.py in the directory of "code".
 
 Default model was VGG16. If you change the base_model part in the SGD.py, you can try different models. 
 
