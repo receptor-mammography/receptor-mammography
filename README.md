@@ -12,6 +12,7 @@ hdf5 file can be downloaded from: https://github.com/receptor-mammography/recept
 
 ## Usage
 python SGD.py in the directory of "code".
+Default model was VGG. If you change the base_model part　in the SGD.py, you can try different models. The hdf5files we have prepared are VGG16, InceptionV3, ResNet50, and DenseNet121.
 
 ## Enviroment
 This algorithm was built in the TensorFlow framework (https://www.tensorflow.org/) with the Keras wrapper library (https://keras.io/).
