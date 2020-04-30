@@ -1,9 +1,7 @@
 #-*- coding: utf-8 -*-
-# 使用するGPUを指定するには環境変数 CUDA_VISIBLE_DEVICES に0-3の値を指定して実行すること。
 import keras
 import tensorflow
 
-# 使うモデルをインポートする
 from keras.applications.vgg16 import VGG16
 #from keras.applications.inception_v3 import InceptionV3
 #from keras.applications.resnet50 import ResNet50
@@ -28,8 +26,6 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import StratifiedKFold, KFold
 
-# パラメータ
-
 #steps_per_epoch = int(X.shape[0] // batch_size)
 #validation_steps = int(count_validation / batch_size)
 # Trueなら学習せず、predictのみ実行する
@@ -42,7 +38,6 @@ use_cross_validation = True
 # お試しでMNISTを対象に実行するか
 use_mnist = False
 #use_cross_validation = False
-use_simple = False
 #use_simple = True
 use_down_sampling=True
 
@@ -54,16 +49,10 @@ n_splits=4
 #(クロスバリデーションの1splitあたりの学習エポック数は sub_split * epoch になる。
 sub_split=10
 
-if use_simple:
-  batch_size=4
-  epochs=2
-  n_splits=2
-  sub_split=2
 
 def down_sample(x,y, shuffle=True):
    global use_down_sampling
    if not use_down_sampling:
-     # ダウンサンプリングしない版
      r = np.arange(len(y))
      if shuffle: r=np.random.permutation(r)
      return r
@@ -74,9 +63,8 @@ def down_sample(x,y, shuffle=True):
    each_num = min([len(indices[i]) for i in indices])
    res = []
    for c in categories:
-     index = np.random.choice(indices[c], each_num, replace=False) # 重複なしeach_num個のランダム抽出
+     index = np.random.choice(indices[c], each_num, replace=False)
      res.extend(index)
-   # シャッフル
    if shuffle:
       res = np.random.permutation(res)
    print("size change ", len(y), ' -> ', len(res), '(min',each_num,')')
@@ -94,7 +82,7 @@ else:
   img_dir_test = '/path/to/test-dataset'
   classes = ["Negative", "Positive"]
   file_ext = 'png'
-  image_size=300
+  image_size=500
 
 img_height=image_size
 img_width=image_size
@@ -109,7 +97,6 @@ def load_dataset(path, classes):
   for index, ClassLabel in enumerate(classes):
     global use_generator
     ImagesDir = os.path.join(path, ClassLabel)
-    # RGB変換
     print(index)
     print(ClassLabel)
     print(ImagesDir)
@@ -119,16 +106,13 @@ def load_dataset(path, classes):
         print(file)
         image = Image.open(file)
         image = image.convert('RGB')
-        # リサイズ
         image = image.resize((image_size, image_size))
-        # 画像から配列に変換 
         data = np.asarray(image)
         X.append(data)
         Y.append(index)
         Files.append(file)
   X = np.array(X)
   Y = np.array(Y)
-  # データ型の変換＆正規化
   if not use_generator:
     X = X.astype('float32') / 255
   return (X, Y, np.array(Files))
@@ -139,16 +123,15 @@ print(X.shape, Y.shape)
 
 dir_tf_log = '../tf_log'
 
-# セッションの初期化
+#initialization
 config = tensorflow.ConfigProto(gpu_options=tensorflow.GPUOptions(allow_growth=True))
 session = tensorflow.Session(config=config)
 K.tensorflow_backend.set_session(session)
 
-#訓練データ拡張
+#augmentation
 horizontal_flip = True
 vertical_flip = True
 if use_mnist:
-  # mnist は反転すると数字が変わるので反転オフにする
   horizontal_flip = False
   vertical_flip = False
 datagen = ImageDataGenerator(
@@ -169,11 +152,9 @@ datagen = ImageDataGenerator(
 
 def create_model():
   global image_size
-  #VGGモデルの読み込み。最終層は読み込まない
   input_shape = (image_size, image_size, 3)
   # VGG16, InceptionV3, ResNet50, DenseNet121 のいずれかのモデルを選択
   base_model = VGG16(weights= 'imagenet', include_top=False, input_shape=input_shape)
-  #最終層の設定
   x = base_model.output
   x = GlobalAveragePooling2D()(x)
   #x = Dense(1024, activation='relu')(x)
@@ -193,23 +174,21 @@ def create_model():
   # for layer in model.layers[14:]:
   #   layer.trainable = True
   # model.summary()
-
-  # 学習率
   #opt = SGD()
   opt = SGD(lr=0.001)
   #opt = rmsprop(lr=5e-7, decay=5e-5)
   model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
   return model
 
-# 出力ファイル名
+# output directory
 model_save_name = '../h5files/SGD_ensemble_%d.hdf5'
 csvlog_name = '../log/SGD.log'
 
-# コールバック
+# callback
 #checkpointer = ModelCheckpoint(filepath=model_save_name, verbose=1, save_best_only=True)
 csv_logger = CSVLogger(csvlog_name)
 
-# 学習
+# training
 script_path = os.path.abspath(__file__)
 
 skf = KFold(n_splits=n_splits, shuffle=True)
@@ -279,7 +258,7 @@ def predict(x, raw=False, model_range=None, use_argmax=True):
     global model_save_name, n_splits, preds, use_cross_validation, predict_only
     pred = []
     default_model_range = np.arange(n_splits if use_cross_validation else 1)
-    if len(models) == 0: # キャッシュがなければキャッシュを作る
+    if len(models) == 0:
       for i in default_model_range:
           model = create_model()
           model.load_weights(model_save_name % i)
@@ -307,7 +286,6 @@ print("Predict:")
 for i in np.arange(num_classes):
     x = Xtest[Ytest == i]
     files = testFiles[Ytest == i]
-    # generator で正規化している場合、データ自体が正規化されてないので、先に正規化する
     if use_generator:
        x = x / 255.
     
