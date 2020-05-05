@@ -155,10 +155,6 @@ def create_model():
   input_shape = (image_size, image_size, 3)
   # Choose the model from "VGG16, InceptionV3, ResNet50, DenseNet121"
   base_model = VGG16(weights= 'imagenet', include_top=False, input_shape=input_shape)
-  x = base_model.output
-  x = GlobalAveragePooling2D()(x)
-  #x = Dense(1024, activation='relu')(x)
-  predictions = Dense(num_classes, activation = 'softmax')(x)
   m = Sequential()
   m.add(Flatten(input_shape=base_model.output_shape[1:]))
   m.add(Dense(256, activation='relu', kernel_initializer='he_normal'))
