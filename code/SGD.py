@@ -2,6 +2,7 @@
 import keras
 import tensorflow
 
+# Switch the model which you wanted to use
 from keras.applications.vgg16 import VGG16
 #from keras.applications.inception_v3 import InceptionV3
 #from keras.applications.resnet50 import ResNet50
@@ -48,6 +49,28 @@ sub_split=10
 
 batch_size=4
 epochs=50
+
+def create_model():
+  global image_size
+  input_shape = (image_size, image_size, 3)
+  # Choose the model from "VGG16, InceptionV3, ResNet50, DenseNet121"
+  base_model = VGG16(weights= 'imagenet', include_top=False, input_shape=input_shape)
+  m = Sequential()
+  m.add(Flatten(input_shape=base_model.output_shape[1:]))
+  m.add(Dense(256, activation='relu', kernel_initializer='he_normal'))
+  m.add(BatchNormalization())
+  m.add(Dropout(0.5))
+  m.add(Dense(num_classes, activation='softmax'))
+  predictions = m(base_model.output)
+
+  model = Model(inputs=base_model.input, outputs=predictions)
+  opt = SGD(lr=0.001)
+  model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
+  return model
+
+# output directory
+model_save_name = '../h5files/SGD_ensemble_%d.hdf5'
+csvlog_name = '../log/SGD.log'
 
 
 def down_sample(x,y, shuffle=True):
@@ -149,27 +172,6 @@ datagen = ImageDataGenerator(
         zoom_range=False,
         fill_mode='reflect')
 
-def create_model():
-  global image_size
-  input_shape = (image_size, image_size, 3)
-  # Choose the model from "VGG16, InceptionV3, ResNet50, DenseNet121"
-  base_model = VGG16(weights= 'imagenet', include_top=False, input_shape=input_shape)
-  m = Sequential()
-  m.add(Flatten(input_shape=base_model.output_shape[1:]))
-  m.add(Dense(256, activation='relu', kernel_initializer='he_normal'))
-  m.add(BatchNormalization())
-  m.add(Dropout(0.5))
-  m.add(Dense(num_classes, activation='softmax'))
-  predictions = m(base_model.output)
-
-  model = Model(inputs=base_model.input, outputs=predictions)
-  opt = SGD(lr=0.001)
-  model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
-  return model
-
-# output directory
-model_save_name = '../h5files/SGD_ensemble_%d.hdf5'
-csvlog_name = '../log/SGD.log'
 
 # callback
 csv_logger = CSVLogger(csvlog_name)
@@ -237,7 +239,7 @@ if not predict_only:
 preds=[]
 models=[]
 
-# prediction
+# Prediction
 # x: list for prediction
 # If "raw=True", the categorical cross-entropy prediction value for each image are provided. If "raw=False", present summary only.
 # model_range: Choice which h5file you use.
