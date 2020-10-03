@@ -1,4 +1,6 @@
 #-*- coding: utf-8 -*-
+
+# Import libraries
 import keras
 import tensorflow
 
@@ -27,11 +29,9 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import StratifiedKFold, KFold
 
-#steps_per_epoch = int(X.shape[0] // batch_size)
-#validation_steps = int(count_validation / batch_size)
 # If "True", you can predict without training algorithm. 
 predict_only = True 
-#use_ensemble = False
+
 # If "True", you can use generator.
 use_generator = True
 
@@ -43,13 +43,17 @@ n_splits=4
 # If "True", you can use MNIST as trial.
 use_mnist = False
 
+# If "True", you can use downsample.
 use_down_sampling=True
-#Decide how many downsamples you use in each validation.
+
+# Decide how many downsamples you use in each validation.
 sub_split=10
 
+# Decide batch_size and epochs
 batch_size=4
 epochs=50
 
+# Definition of models
 def create_model():
   global image_size
   input_shape = (image_size, image_size, 3)
@@ -68,11 +72,11 @@ def create_model():
   model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
   return model
 
-# output directory
+# Output directory
 model_save_name = '../h5files/SGD_ensemble_%d.hdf5'
 csvlog_name = '../log/SGD.log'
 
-
+# Definition of downsampling
 def down_sample(x,y, shuffle=True):
    global use_down_sampling
    if not use_down_sampling:
@@ -107,11 +111,14 @@ else:
   file_ext = 'png'
   image_size=500
 
+# Set image size
 img_height=image_size
 img_width=image_size
 
+# Set number of classes
 num_classes = len(classes)
 
+# Fetch dataset lists
 def load_dataset(path, classes):
   global image_size
   X=[]
@@ -146,12 +153,12 @@ print(X.shape, Y.shape)
 
 dir_tf_log = '../tf_log'
 
-#initialization
+# Initialization
 config = tensorflow.ConfigProto(gpu_options=tensorflow.GPUOptions(allow_growth=True))
 session = tensorflow.Session(config=config)
 K.tensorflow_backend.set_session(session)
 
-#augmentation
+# Augmentation
 horizontal_flip = True
 vertical_flip = True
 if use_mnist:
@@ -173,10 +180,10 @@ datagen = ImageDataGenerator(
         fill_mode='reflect')
 
 
-# callback
+# Callbacks
 csv_logger = CSVLogger(csvlog_name)
 
-# training
+# Training
 script_path = os.path.abspath(__file__)
 
 skf = KFold(n_splits=n_splits, shuffle=True)
