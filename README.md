@@ -17,6 +17,13 @@ Default model was VGG16. If you change the base_model part in the SGD.py, you ca
 
 The hdf5files we have prepared are VGG16, InceptionV3, ResNet50, and DenseNet121.
 
+
+## For ensembling model prediction 
+There are four models for predicting receptor expressions in mammography.
+
+When you want to use ensemble model of Inception and ResNet showing the highest performance in the ER test-dataset, use the Inception_prediction.py and the ResNet_prediction.py with the trained weights. You can obtain ensemble model results, combining inferenced results of the Inception_prediction.py and the ResNet_prediction.py
+
+
 ## Enviroment
 This algorithm was built in the TensorFlow framework (https://www.tensorflow.org/) with the Keras wrapper library (https://keras.io/).
 
