@@ -57,6 +57,7 @@ def create_model():
 
   # Optimizer
   opt = SGD(lr=0.001)
+  # Compile the model
   model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
   return model
 
