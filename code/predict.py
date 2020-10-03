@@ -37,6 +37,7 @@ img_width=image_size
 # The number of classes
 num_classes = len(classes)
 
+# Model definition
 def create_model():
   global image_size
   input_shape = (image_size, image_size, 3)
@@ -56,9 +57,11 @@ def create_model():
 
   # Optimizer
   opt = SGD(lr=0.001)
+  # Compile the model
   model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
   return model
 
+# Fetch dataset list
 def load_dataset(path, classes):
   global image_size
   X=[]
