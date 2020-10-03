@@ -18,7 +18,7 @@ Default model was VGG16. If you change the base_model part in the SGD.py, you ca
 The hdf5files we have prepared are VGG16, InceptionV3, ResNet50, and DenseNet121.
 
 
-## For ensembling model prediction 
+## Ensembling model prediction 
 There are four models for predicting receptor expressions in mammography.
 In the paper, we achieved the highest perfoirmance of prediction with ensemble models.
 
