@@ -28,7 +28,7 @@ dir_tf_log = '../tf_log'
 
 classes = ["Negative", "Positive"]
 file_ext = 'png'
-image_size=300
+image_size=500
 
 # Image size
 img_height=image_size
