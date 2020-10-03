@@ -3,7 +3,6 @@
 # Libraries
 import keras
 import tensorflow
-from keras.applications.vgg16 import VGG16
 from keras.models import Model, Sequential
 from keras.layers import Dense, Dropout, Flatten, BatchNormalization
 
@@ -25,6 +24,7 @@ from sklearn.model_selection import StratifiedKFold, KFold
 # Weight path
 model_save_name = '../h5files/ER_VGG_best_performing.hdf5'
 img_dir_test = '/path/to/test-img-dir'
+dir_tf_log = '../tf_log'
 
 classes = ["Negative", "Positive"]
 file_ext = 'png'
@@ -36,6 +36,28 @@ img_width=image_size
 
 # The number of classes
 num_classes = len(classes)
+
+def create_model():
+  global image_size
+  input_shape = (image_size, image_size, 3)
+  # Feature extractor
+  from keras.applications.vgg16 import VGG16
+  base_model = VGG16(weights= 'imagenet', include_top=False, input_shape=input_shape)
+  # Classifier
+  m = Sequential()
+  m.add(Flatten(input_shape=base_model.output_shape[1:]))
+  m.add(Dense(256, activation='relu', kernel_initializer='he_normal'))
+  m.add(BatchNormalization())
+  m.add(Dropout(0.5))
+  m.add(Dense(num_classes, activation='softmax'))
+  predictions = m(base_model.output)
+
+  model = Model(inputs=base_model.input, outputs=predictions)
+
+  # Optimizer
+  opt = SGD(lr=0.001)
+  model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
+  return model
 
 def load_dataset(path, classes):
   global image_size
@@ -69,34 +91,11 @@ Xtest, Ytest, testFiles = load_dataset(img_dir_test, classes)
 
 print(Xtest.shape, Ytest.shape)
 
-dir_tf_log = '../tf_log'
-
 # Initialization
 K.clear_session()
 config = tensorflow.ConfigProto(gpu_options=tensorflow.GPUOptions(allow_growth=True))
 session = tensorflow.Session(config=config)
 K.tensorflow_backend.set_session(session)
-
-def create_model():
-  global image_size
-  input_shape = (image_size, image_size, 3)
-  # Feature extractor
-  base_model = VGG16(weights= 'imagenet', include_top=False, input_shape=input_shape)
-  # Classifier
-  m = Sequential()
-  m.add(Flatten(input_shape=base_model.output_shape[1:]))
-  m.add(Dense(256, activation='relu', kernel_initializer='he_normal'))
-  m.add(BatchNormalization())
-  m.add(Dropout(0.5))
-  m.add(Dense(num_classes, activation='softmax'))
-  predictions = m(base_model.output)
-
-  model = Model(inputs=base_model.input, outputs=predictions)
-
-  # Optimizer
-  opt = SGD(lr=0.001)
-  model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
-  return model
 
 model = create_model()
 model.summary()
