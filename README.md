@@ -11,9 +11,9 @@ You can use this algorithm after downloaded hdf5 file from release page. This al
 ※hdf5 file can be downloaded from: https://github.com/receptor-mammography/receptor-mammography/releases
 
 ## Usage
-・python SGD.py in the directory of "code".
+・python train.py in the directory of "code".
 
-Default model was VGG16. If you change the base_model part in the SGD.py, you can try different models. 
+Default model was VGG16. If you change the base_model part in the train.py, you can try different models. 
 
 The hdf5files we have prepared are VGG16, InceptionV3, ResNet50, and DenseNet121.
 
