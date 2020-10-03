@@ -24,7 +24,6 @@ from sklearn.model_selection import StratifiedKFold, KFold
 
 # Weight path
 model_save_name = '../h5files/ER_VGG_best_performing.hdf5'
-csvlog_name = '../log/SGD.log'
 img_dir_test = '/path/to/test-img-dir'
 
 classes = ["Negative", "Positive"]
@@ -93,16 +92,9 @@ def create_model():
   predictions = m(base_model.output)
 
   model = Model(inputs=base_model.input, outputs=predictions)
-  # #FineTuning
-  # for layer in model.layers[:14]:
-  #   layer.trainable = False
-  # for layer in model.layers[14:]:
-  #   layer.trainable = True
-  # model.summary()
 
   # Optimizer
   opt = SGD(lr=0.001)
-  #opt = rmsprop(lr=5e-7, decay=5e-5)
   model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
   return model
 
