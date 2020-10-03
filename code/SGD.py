@@ -147,7 +147,6 @@ datagen = ImageDataGenerator(
         horizontal_flip=horizontal_flip,
         vertical_flip=vertical_flip,
         zoom_range=False,
-        #channel_shift_range=30,
         fill_mode='reflect')
 
 def create_model():
@@ -164,15 +163,7 @@ def create_model():
   predictions = m(base_model.output)
 
   model = Model(inputs=base_model.input, outputs=predictions)
-  # #FineTuning
-  # for layer in model.layers[:14]:
-  #   layer.trainable = False
-  # for layer in model.layers[14:]:
-  #   layer.trainable = True
-  # model.summary()
-  #opt = SGD()
   opt = SGD(lr=0.001)
-  #opt = rmsprop(lr=5e-7, decay=5e-5)
   model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
   return model
 
@@ -181,7 +172,6 @@ model_save_name = '../h5files/SGD_ensemble_%d.hdf5'
 csvlog_name = '../log/SGD.log'
 
 # callback
-#checkpointer = ModelCheckpoint(filepath=model_save_name, verbose=1, save_best_only=True)
 csv_logger = CSVLogger(csvlog_name)
 
 # training
@@ -235,7 +225,7 @@ if not predict_only:
 					epochs=epochs, verbose=1,
 					validation_data = (xval, yval),
 					callbacks=[csv_logger, checkpointer])
-	# Evaluation
+		# Evaluation
 		if use_generator:
 			scores = model.evaluate_generator(datagen.flow(xtest, ytest, batch_size=batch_size), verbose=0)
 		else:
@@ -251,7 +241,7 @@ models=[]
 # x: list for prediction
 # If "raw=True", the categorical cross-entropy prediction value for each image are provided. If "raw=False", present summary only.
 # model_range: Choice which h5file you use.
-def predict(x, raw=False, model_range=None, use_argmax=True):
+def predict(x, raw=False, model_range=None):
     global model_save_name, n_splits, preds, use_cross_validation, predict_only
     pred = []
     default_model_range = np.arange(n_splits if use_cross_validation else 1)
@@ -271,26 +261,19 @@ def predict(x, raw=False, model_range=None, use_argmax=True):
     if not raw:
       pred = np.array(pred)
       pred = np.sum(pred, axis=0)
-      if use_argmax:
-        pred = np.argmax(pred, axis=1)
     preds.append(pred)
     return np.array(pred)
+
 print("Predict:")
-
-
-
-
 for i in np.arange(num_classes):
     x = Xtest[Ytest == i]
     files = testFiles[Ytest == i]
     if use_generator:
        x = x / 255.
     
-    result = predict(x, use_argmax=False)
-    #result = predict(x, use_argmax=False, model_range=[1])
+    result = predict(x)
+    #result = predict(x, model_range=[1])
     for k,file in enumerate(files):
        print("class ", i,"\tpredict ", np.argmax(result[k]), "\t", file, "\t", result[k]) 
-    #print("class ", i, ": ", predict(x, use_argmax=False))
-#print("average acc: %.2f%%" % (np.mean(np.array(test_pred))*100))
 #K.clear_session()
 
